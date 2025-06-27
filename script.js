@@ -1,0 +1,1 @@
+// Handles login, AI prompt, subscription checks, and PDF generation
