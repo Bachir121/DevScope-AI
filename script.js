@@ -10,7 +10,13 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
     });
     let data;
     if (res.ok) {
-      data = await res.json();
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error('Server returned non-JSON response: ' + text.slice(0, 100));
+      }
     } else {
       const text = await res.text();
       throw new Error(text || 'Server error');
