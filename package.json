@@ -5,8 +5,12 @@
   "description": "AI-powered software generator with PDF, auth, payment, and dashboard",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
-  },
+  "start": "node server.js"
+},
+"engines": {
+  "node": "18.x"
+},
+  
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
