@@ -8,7 +8,13 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idea })
     });
-    const data = await res.json();
+    let data;
+    if (res.ok) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error(text || 'Server error');
+    }
     if (data.result) {
       document.getElementById('output').innerHTML = `<pre>${data.result}</pre><button id='download-pdf'>Download as PDF</button>`;
       document.getElementById('download-pdf').onclick = async () => {
