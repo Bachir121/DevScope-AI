@@ -86,52 +86,41 @@ app.get('/health', (req, res) => {
 app.post('/api/generate', async (req, res) => {
   try {
     const idea = req.body.idea;
-    // Simulate AI-generated detailed scope (replace with OpenAI call in production)
-    const scope = {
-      description: `A software solution for: ${idea}`,
-      targetUsers: 'Startup founders, freelancers, digital agencies, clients',
-      keyFeatures: [
-        'AI-powered project scope generation',
-        'PDF contract generation',
-        'Subscription system (monthly/annual)',
-        'Admin dashboard for managing subscriptions',
-        'Email login and confirmation'
+    // Use OpenAI to generate a legal document draft based on the user's idea
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are a legal assistant. Generate a professional legal document draft based on the user\'s idea. Include a title, parties, and main clauses.' },
+        { role: 'user', content: idea }
       ],
-      suggestedTechnologies: [
-        'Node.js (backend)',
-        'Express.js',
-        'OpenAI API',
-        'Firebase (auth, database)',
-        'HTML/CSS/JS (frontend)'
-      ],
-      summary: `DevScope AI bridges the gap between clients and developers by using AI to translate vague ideas into detailed software scopes. Just describe your idea in a few sentences — DevScope AI will generate a clear project outline including what the software should do, target users, key features, suggested technologies, and a ready-to-send paragraph to share with your developer.`
-    };
-    res.json({ result: scope });
+      max_tokens: 600
+    });
+    const result = completion.data.choices[0].message.content;
+    res.json({ result });
   } catch (err) {
-    console.error("Generate error:", err);
-    res.status(500).json({ error: "Generation failed" });
+    console.error('Generate error:', err);
+    res.status(500).json({ error: 'Generation failed', details: err.message });
   }
 });
 
 app.post('/api/contract', async (req, res) => {
   try {
-    const { projectTitle, clientName } = req.body;
+    const { contractText } = req.body;
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 400]);
-    
-    page.drawText(`Contract Agreement\n\nClient: ${clientName}\nProject: ${projectTitle}`, { 
-      x: 50, 
-      y: 350,
-      size: 14
+    const page = pdfDoc.addPage([600, 800]);
+    page.drawText(contractText || 'No contract text provided.', {
+      x: 50,
+      y: 750,
+      size: 12,
+      maxWidth: 500
     });
-    
     const pdfBytes = await pdfDoc.save();
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=contract.pdf');
     res.send(pdfBytes);
   } catch (err) {
-    console.error("PDF error:", err);
-    res.status(500).json({ error: "PDF generation failed" });
+    console.error('PDF error:', err);
+    res.status(500).json({ error: 'PDF generation failed', details: err.message });
   }
 });
 
